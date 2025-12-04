@@ -73,8 +73,23 @@ class AdminusersController extends \ItForFree\SimpleMVC\MVC\Controller
             if (!empty($_POST['saveChanges'] )) {
                 $Adminusers = new UserModel();
                 $newAdminusers = $Adminusers->loadFromArray($_POST);
+                 $newAdminusers->id = $id;
+                 
+
+                if (empty($_POST['pass'])){
+                    $currentUser = $Adminusers->getById($id);
+                    $newAdminusers->pass = $currentUser->pass;
+                    $newAdminusers->salt = $currentUser->salt;
+
+                }
+                else{
+                    $newAdminusers->salt = rand(0, 1000000);
+                    $saltedPassword = $_POST['pass'] . $newAdminusers->salt;
+                    $newAdminusers->pass = password_hash($saltedPassword, PASSWORD_BCRYPT);
+                }
                 $newAdminusers->update();
                 $this->redirect($Url::link("admin/adminusers/index&id=$id"));
+
             } 
             elseif (!empty($_POST['cancel'])) {
                 $this->redirect($Url::link("admin/adminusers/index&id=$id"));
