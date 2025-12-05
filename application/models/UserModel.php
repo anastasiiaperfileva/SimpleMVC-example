@@ -23,7 +23,7 @@ class UserModel extends Model
     /**
     * @var string роль пользователя
     */
-    protected $role = null;
+    public $role = null;
     
     public $email = null;
     
@@ -41,6 +41,8 @@ class UserModel extends Model
     
     public $salt = null;
     
+
+
 
     public function insert()
     {
@@ -67,23 +69,18 @@ class UserModel extends Model
     
     public function update()
     {
-        $sql = "UPDATE $this->tableName SET timestamp=:timestamp, login=:login, pass=:pass, email=:email  WHERE id = :id";  
+        $sql = "UPDATE $this->tableName SET timestamp=:timestamp, login=:login, role=:role,pass=:pass,salt=:salt,email=:email  WHERE id = :id";  
         $st = $this->pdo->prepare ( $sql );
         
-        $st->bindValue( ":timestamp", (new \DateTime('NOW'))->format('Y-m-d H:i:s'), \PDO::PARAM_STMT);
-        $st->bindValue( ":login", $this->login, \PDO::PARAM_STR );
-        
-        // Хеширование пароля
-        $this->salt = rand(0,1000000);
-        //$st->bindValue( ":salt", $this->salt, \PDO::PARAM_STR );
-        //$this->pass .= $this->salt;
-        //$hashPass = password_hash($this->pass, PASSWORD_BCRYPT);
-        $st->bindValue( ":pass", $this->pass, \PDO::PARAM_STR );
-        
-        //$st->bindValue( ":role", $this->role, \PDO::PARAM_STR );
-        $st->bindValue( ":email", $this->email, \PDO::PARAM_STR );
-        $st->bindValue( ":id", $this->id, \PDO::PARAM_INT );
-        $st->execute();
+        $st = $this->pdo->prepare($sql);
+        $st->bindValue(":timestamp", (new \DateTime('NOW'))->format('Y-m-d H:i:s'), \PDO::PARAM_STMT);
+        $st->bindValue(":login", $this->login, \PDO::PARAM_STR);
+        $st->bindValue(":role", $this->role, \PDO::PARAM_STR); 
+        $st->bindValue(":email", $this->email, \PDO::PARAM_STR);
+        $st->bindValue(":pass", $this->pass, \PDO::PARAM_STR);
+        $st->bindValue(":salt", $this->salt, \PDO::PARAM_STR);
+        $st->bindValue(":id", $this->id, \PDO::PARAM_INT);
+        $st->execute(); 
     }
     
     /**
@@ -126,6 +123,16 @@ class UserModel extends Model
 	$st->bindValue(":login", $login, \PDO::PARAM_STR);
 	$st->execute();	
 	return $st->fetch();
+    }
+    public function rules()
+    {
+        return [
+            ['login', 'required', 'message' => 'Введите логин'],
+            ['email', 'required', 'message' => 'Введите email'],
+            ['email', 'email', 'message' => 'Введите корректный email'],
+            ['pass', 'safe'], // Пароль необязательный
+            ['role', 'required', 'message' => 'Выберите роль']
+        ];
     }
 
 }

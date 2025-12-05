@@ -30,7 +30,7 @@ class AdminusersController extends \ItForFree\SimpleMVC\MVC\Controller
             $this->view->render('user/view-item.php');
         } else { // выводим полный список
             
-            $users = $Adminusers->getList()['results'];
+           $users = $Adminusers->getList()['results'];
             $this->view->addVar('users', $users);
             $this->view->render('user/index.php');
         }
@@ -75,6 +75,11 @@ class AdminusersController extends \ItForFree\SimpleMVC\MVC\Controller
                 $newAdminusers = $Adminusers->loadFromArray($_POST);
                  $newAdminusers->id = $id;
                  
+
+                 if (isset($_POST['role'])) {
+                    $newAdminusers->role = $_POST['role'];
+                }
+
 
                 if (empty($_POST['pass'])){
                     $currentUser = $Adminusers->getById($id);
