@@ -67,17 +67,26 @@ class AdminusersController extends \ItForFree\SimpleMVC\MVC\Controller
     {
         $id = $_GET['id'];
         $Url = Config::get('core.router.class');
+         $Adminusers = new UserModel(); 
         
         if (!empty($_POST)) { // это выполняется нормально.
             
             if (!empty($_POST['saveChanges'] )) {
-                $Adminusers = new UserModel();
+                $currentUser = $Adminusers->getById($id);
                 $newAdminusers = $Adminusers->loadFromArray($_POST);
                  $newAdminusers->id = $id;
                  
 
                  if (isset($_POST['role'])) {
                     $newAdminusers->role = $_POST['role'];
+                }
+
+                $dataChanged = false;
+                if ($currentUser->login != $_POST['login'] ||
+                    $currentUser->email != $_POST['email'] ||
+                    $currentUser->role != $_POST['role'] ||
+                    !empty($_POST['pass'])) {
+                    $dataChanged = true;
                 }
 
 
@@ -88,6 +97,7 @@ class AdminusersController extends \ItForFree\SimpleMVC\MVC\Controller
 
                 }
                 else{
+                    $dataChanged = true;
                     $newAdminusers->salt = rand(0, 1000000);
                     $saltedPassword = $_POST['pass'] . $newAdminusers->salt;
                     $newAdminusers->pass = password_hash($saltedPassword, PASSWORD_BCRYPT);
@@ -97,9 +107,12 @@ class AdminusersController extends \ItForFree\SimpleMVC\MVC\Controller
 
             } 
             elseif (!empty($_POST['cancel'])) {
+                $Adminusers->updateLastEdited($id);
                 $this->redirect($Url::link("admin/adminusers/index&id=$id"));
             }
         } else {
+            $Adminusers->updateLastEdited($id);
+
             $Adminusers = new UserModel();
             $viewAdminusers = $Adminusers->getById($id);
             

@@ -15,6 +15,7 @@ $User = Config::getObject('core.user.class');
       <th scope="col">Логин</th>
       <th scope="col">Email</th>
       <th scope="col">Зарегистрирован</th>
+      <th scope="col">Последнее редактирование</th>
       <th scope="col"></th>
     </tr>
      </thead>
@@ -29,6 +30,15 @@ $User = Config::getObject('core.user.class');
         <td>  <?= $User->returnIfAllowed("admin/adminusers/edit",
                     "<a href=" . \ItForFree\SimpleMVC\Router\WebRouter::link("admin/adminusers/edit&id=". $user->id) 
                     . ">[Редактировать]</a>");?></td>
+        <td>
+            <?php
+            $displayDate = $user->lastEdited ?: $user->timestamp;
+            $statusText = $user->lastEdited ? 'Редактирован' : 'Создан';
+            ?>
+            <?= date('d.m.Y H:i', strtotime($displayDate)) ?>
+            <br>
+            <small class="text-muted">(<?= $statusText ?>)</small>
+        </td>
     </tr>
     <?php endforeach; ?>
     

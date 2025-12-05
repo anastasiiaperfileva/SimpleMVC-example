@@ -25,9 +25,11 @@ class UserModel extends Model
     */
     public $role = null;
     
-    public $email = null;
+    public $email = null; 
     
     public $timestamp = null;
+
+    public $lastEdited = null;
     
     /**
      * @var string Критерий сортировки строк таблицы
@@ -46,11 +48,14 @@ class UserModel extends Model
 
     public function insert()
     {
-        $sql = "INSERT INTO $this->tableName (timestamp, login, salt, pass, role, email) VALUES (:timestamp, :login, :salt, :pass, :role, :email)"; 
+        $sql = "INSERT INTO $this->tableName (timestamp, login, salt, pass, role, email, lastEdited) VALUES (:timestamp, :login, :salt, :pass, :role, :email, :lastEdited)"; 
         $st = $this->pdo->prepare ( $sql );
-        $st->bindValue( ":timestamp", (new \DateTime('NOW'))->format('Y-m-d H:i:s'), \PDO::PARAM_STMT);
+        $st->bindValue( ":timestamp", (new \DateTime('NOW'))->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
         $st->bindValue( ":login", $this->login, \PDO::PARAM_STR );
         
+        $st->bindValue( ":lastEdited", $currentDateTime, \PDO::PARAM_STR);
+        $st->bindValue( ":login", $this->login, \PDO::PARAM_STR );
+
         //Хеширование пароля
         $this->salt = rand(0,1000000);
         $st->bindValue( ":salt", $this->salt, \PDO::PARAM_STR );
@@ -69,7 +74,7 @@ class UserModel extends Model
     
     public function update()
     {
-        $sql = "UPDATE $this->tableName SET timestamp=:timestamp, login=:login, role=:role,pass=:pass,salt=:salt,email=:email  WHERE id = :id";  
+        $sql = "UPDATE $this->tableName SET timestamp=:timestamp, login=:login, role=:role,pass=:pass,salt=:salt,email=:email, lastEdited=:lastEdited  WHERE id = :id";  
         $st = $this->pdo->prepare ( $sql );
         
         $st = $this->pdo->prepare($sql);
@@ -79,8 +84,25 @@ class UserModel extends Model
         $st->bindValue(":email", $this->email, \PDO::PARAM_STR);
         $st->bindValue(":pass", $this->pass, \PDO::PARAM_STR);
         $st->bindValue(":salt", $this->salt, \PDO::PARAM_STR);
+
+        if ($this->lastEdited) {
+            $st->bindValue(":lastEdited", $this->lastEdited, \PDO::PARAM_STR);
+        } else {
+            $st->bindValue(":lastEdited", (new \DateTime('NOW'))->format('Y-m-d H:i:s'), \PDO::PARAM_STR);
+        }
         $st->bindValue(":id", $this->id, \PDO::PARAM_INT);
         $st->execute(); 
+    }
+
+    public function updateLastEdited($id, $dateTime = null){
+        if (!$dateTime){
+             $dateTime = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
+        }
+         $sql = "UPDATE $this->tableName SET lastEdited = :lastEdited WHERE id = :id";
+        $st = $this->pdo->prepare($sql);
+        $st->bindValue(":lastEdited", $dateTime, \PDO::PARAM_STR);
+        $st->bindValue(":id", $id, \PDO::PARAM_INT);
+        $st->execute();
     }
     
     /**

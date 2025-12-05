@@ -15,7 +15,18 @@ $User = Config::getObject('core.user.class');
             . ">[Удалить]</a>");?>
     </span>
 </h2>
-
+<?php if ($viewAdminusers->lastEdited || $viewAdminusers->timestamp): ?>
+    <p>
+        <strong>Дата создания:</strong> 
+        <?= $viewAdminusers->timestamp ? date('d.m.Y H:i', strtotime($viewAdminusers->timestamp)) : 'Не указано' ?>
+        
+        <?php if ($viewAdminusers->lastEdited && $viewAdminusers->lastEdited != $viewAdminusers->timestamp): ?>
+            <br>
+            <strong>Последнее редактирование:</strong> 
+            <?= date('d.m.Y H:i', strtotime($viewAdminusers->lastEdited)) ?>
+        <?php endif; ?>
+    </p>
+<?php endif; ?>
 <form id="editUser" method="post" action="<?= $Url::link("admin/adminusers/edit&id=" . $_GET['id'])?>">
     <h5>Введите имя пользователя</h5>
     <input type="text" name="login" placeholder="логин пользователя" value="<?= $viewAdminusers->login ?>"><br>
@@ -34,3 +45,4 @@ $User = Config::getObject('core.user.class');
     <input type="submit" name="saveChanges" value="Сохранить">
     <input type="submit" name="cancel" value="Назад">
 </form>
+
